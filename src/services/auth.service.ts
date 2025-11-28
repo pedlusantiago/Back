@@ -1,17 +1,27 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { queryFirebird } from "../database/firebird.js";
+import firebird from "../database/firebird";
 
 export class AuthService {
+
     async login(username: string, password: string) {
+
         const sql = `
             SELECT ID, USERNAME, PASSWORD, ROLE 
             FROM USERS 
             WHERE USERNAME = ?
         `;
-        const result = await queryFirebird(sql, [username]);
 
-        if (result.length === 0)
+        // 🔥 Abre a conexão
+        const db = await firebird();
+
+        // 🔥 Executa a query pelo método retornado
+        const result = await db.query(sql, [username]);
+
+        // 🔥 Fecha conexão
+        db.detach();
+
+        if (!result || result.length === 0)
             throw new Error("Usuário não encontrado");
 
         const user = result[0];
