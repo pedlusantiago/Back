@@ -1,61 +1,57 @@
-import { hashPassword } from "../utils/hash";
+import { Router } from "express";
 import firebird from "../database/firebird";
 
-export interface User {
-  ID: number;
-  NAME: string;
-  EMAIL: string;
-  PASSWORD: string;
-  ROLE: "admin" | "user";
-}
+const router = Router();
 
-class UserService {
-  async listUsers() {
-    const db = await firebird();
-    return db.query("SELECT ID, NAME, EMAIL, ROLE FROM USERS");
+router.post("/usuarios", async (req, res) => {
+  const { usuario, perfil } = req.body;
+
+  if (!usuario || !perfil) {
+    return res.status(400).json({
+      error: "Informe USUARIO e PERFIL"
+    });
   }
 
-  async getUser(id: number) {
+  try {
     const db = await firebird();
-    const result = await db.query("SELECT ID, NAME, EMAIL, ROLE FROM USERS WHERE ID=?", [id]);
-    return result[0];
+
+    // 1️⃣ Verificar se existe um registro válido em usucadastro
+    const sqlBusca = `
+            SELECT OPERADOR, USUARIO, PERFIL
+            FROM USUCADASTRO
+            WHERE USUARIO = ?
+        `;
+
+    const rows: any[] = await db.query(sqlBusca, [usuario]);
+
+    if (rows.length === 0) {
+      db.detach();
+      return res.status(404).json({
+        error: "Usuário não encontrado em USUCADASTRO"
+      });
+    }
+
+    const operador = rows[0].OPERADOR;
+
+    // 2️⃣ Criar usuário em USUDASH usando OPERADOR como ID
+    const sqlInsert = `
+            INSERT INTO USUDASH (ID, USUARIO, PERFIL)
+            VALUES (?, ?, ?)
+        `;
+
+    await db.query(sqlInsert, [operador, usuario, perfil]);
+
+    db.detach();
+
+    return res.json({
+      message: "Usuário cadastrado com sucesso",
+      id: operador
+    });
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Erro ao criar usuário" });
   }
+});
 
-  async createUser(name: string, email: string, password: string, role: string) {
-    const db = await firebird();
-    const hashed = await hashPassword(password);
-
-    await db.query(
-      "INSERT INTO USERS (NAME, EMAIL, PASSWORD, ROLE) VALUES (?, ?, ?, ?)",
-      [name, email, hashed, role]
-    );
-
-    return { message: "Usuário criado com sucesso." };
-  }
-
-  async updateUser(id: number, name: string, email: string, role: string) {
-    const db = await firebird();
-    await db.query(
-      "UPDATE USERS SET NAME=?, EMAIL=?, ROLE=? WHERE ID=?",
-      [name, email, role, id]
-    );
-    return { message: "Usuário atualizado." };
-  }
-
-  async deleteUser(id: number) {
-    const db = await firebird();
-    await db.query("DELETE FROM USERS WHERE ID=?", [id]);
-    return { message: "Usuário deletado." };
-  }
-
-  async resetPassword(id: number, newPassword: string) {
-    const db = await firebird();
-    const hashed = await hashPassword(newPassword);
-
-    await db.query("UPDATE USERS SET PASSWORD=? WHERE ID=?", [hashed, id]);
-
-    return { message: "Senha resetada com sucesso." };
-  }
-}
-
-export default new UserService();
+export default router;
