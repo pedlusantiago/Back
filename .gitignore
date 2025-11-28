@@ -1,0 +1,44 @@
+# Node modules
+node_modules/
+
+# TypeScript build
+dist/
+build/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Cache
+.cache/
+.tmp/
+tmp/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# Coverage\ ncoverage/
+*.lcov
+
+# Temporary
+*.tmp
+*.temp
+
+# Firebird artifacts
+*.fdb
+*.gdb
