@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { queryFirebird } from "../database/firebird";
+import { queryFirebird } from "../database/firebird.js";
 
 export class AuthService {
     async login(username: string, password: string) {

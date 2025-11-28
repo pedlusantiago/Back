@@ -4,12 +4,12 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const options: Firebird.Options = {
-    host: process.env.FIREBIRD_HOST,
-    database: process.env.FIREBIRD_DATABASE!,
-    user: process.env.FIREBIRD_USER!,
-    password: process.env.FIREBIRD_PASSWORD!,
+    host: process.env.FIREBIRD_HOST || "",
+    database: process.env.FIREBIRD_DATABASE || "",
+    user: process.env.FIREBIRD_USER || "",
+    password: process.env.FIREBIRD_PASSWORD || "",
     lowercase_keys: false,
-    role: null,
+    role: "",
     pageSize: 4096
 };
 
